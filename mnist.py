@@ -73,7 +73,7 @@ if __name__ == '__main__':
     train_X = X[:3000]
     train_Y = Y[:3000]
 
-    model = mlp.MLP([train_X.shape[1], 50, 50, 50, 50, 50, 50, 50, 50, train_Y.shape[1]])
+    model = mlp.MLP([train_X.shape[1], 500, train_Y.shape[1]])
 
     model.train(train_X, train_Y, threshold=0.005)
     # model = mlp.MLP.load('500.mlp')
