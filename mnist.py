@@ -48,21 +48,32 @@ def save_model(model):
     np.save('output.npy', layers['output'])
 
 
-def pca(A, numpc):
-    M = (A - np.mean(A.T, axis=1)).T
-    latent, coeff = np.linalg.eig(np.cov(M))
-    p = coeff.shape[1]
-    idx = np.argsort(latent)
+def pca(A, B=None, numpc=None):
+    A = (A - np.mean(A.T, axis=1)).T
+    latentA, coeffA = np.linalg.eig(np.cov(A))
+    idx = np.argsort(latentA)
     idx = idx[::-1]
 
-    coeff = coeff[:,idx]
-    latent = latent[idx]
+    coeffA = coeffA[:,idx]
+    latentA = latentA[idx]
+    coeffA = coeffA[:,range(numpc)]
+    A = (coeffA.T @ A).T
 
-    coeff = coeff[:,range(numpc)]
+    if B is not None:
+        B = (B - np.mean(B.T, axis=1)).T
+        latentB, coeffB = np.linalg.eig(np.cov(B))
 
-    train = (coeff.T @ M).T
+        # idx = np.argsort(latentB)
+        # idx = idx[::-1]
 
-    return score
+        coeffB = coeffB[:,idx]
+        latentB = latentB[idx]
+        coeffB = coeffB[:,range(numpc)]
+        B = (coeffB.T @ B).T
+
+        return A, B
+
+    return A
 
 
 if __name__ == '__main__':
@@ -84,16 +95,25 @@ if __name__ == '__main__':
               X.shape, Y.shape, test.shape,
               file=stderr)
 
-    X = pca(X, 150)
+    together = np.append(X, test, axis=0)
+    together = pca(together, numpc=40)
+    together = np.real(together)
+    X = together[:len(X)]
+    test = together[len(X):]
 
     shuffle_ids = np.arange(X.shape[0])
     np.random.shuffle(shuffle_ids)
     X = X[shuffle_ids]
     Y = Y[shuffle_ids]
-    train_X = X[:10000]
-    train_Y = Y[:10000]
+    train_set_size = 10000
+    train_X = X[:train_set_size]
+    train_Y = Y[:train_set_size]
+    test_X = X[train_set_size:]
+    test_Y = Y[train_set_size:]
+
 
     model = mlp.MLP([train_X.shape[1], 100, train_Y.shape[1]])
+    model = mlp.MLP([train_X.shape[1], 20, train_Y.shape[1]])
 
     model.train(train_X, train_Y, threshold=0.005)
     # model = mlp.MLP.load('500.mlp')
@@ -127,3 +147,4 @@ if __name__ == '__main__':
 
         print(file=stderr)
         print('Result: ', correct/len(test_X) * 100, '%', sep='', file=stderr)
+        model.save('%f.mlp' % (correct/len(test_X)))
