@@ -47,6 +47,24 @@ def save_model(model):
     np.save('hidden.npy', layers['hidden'])
     np.save('output.npy', layers['output'])
 
+
+def pca(A, numpc):
+    M = (A - np.mean(A.T, axis=1)).T
+    latent, coeff = np.linalg.eig(np.cov(M))
+    p = coeff.shape[1]
+    idx = np.argsort(latent)
+    idx = idx[::-1]
+
+    coeff = coeff[:,idx]
+    latent = latent[idx]
+
+    coeff = coeff[:,range(numpc)]
+
+    train = (coeff.T @ M).T
+
+    return score
+
+
 if __name__ == '__main__':
 
     try:
@@ -66,14 +84,16 @@ if __name__ == '__main__':
               X.shape, Y.shape, test.shape,
               file=stderr)
 
+    X = pca(X, 150)
+
     shuffle_ids = np.arange(X.shape[0])
     np.random.shuffle(shuffle_ids)
     X = X[shuffle_ids]
     Y = Y[shuffle_ids]
-    train_X = X[:3000]
-    train_Y = Y[:3000]
+    train_X = X[:10000]
+    train_Y = Y[:10000]
 
-    model = mlp.MLP([train_X.shape[1], 500, train_Y.shape[1]])
+    model = mlp.MLP([train_X.shape[1], 100, train_Y.shape[1]])
 
     model.train(train_X, train_Y, threshold=0.005)
     # model = mlp.MLP.load('500.mlp')
@@ -90,8 +110,8 @@ if __name__ == '__main__':
                 print('%6.2f%%' % (idx/len(test) * 100), file=stderr)
             print(idx, answer, sep=',')
     else:
-        test_X = X[3000:13000]
-        test_Y = Y[3000:13000]
+        test_X = X[10000:20000]
+        test_Y = Y[10000:20000]
 
         correct = 0
         for idx, x_p, y_p in zip(range(len(test_X)), test_X, test_Y):
