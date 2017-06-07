@@ -123,7 +123,7 @@ if __name__ == '__main__':
                 correct += 1
 
             if idx % 100 == 0:
-                print('testing: %6.2f%%' % (idx/len(test) * 100), file=stderr)
+                print('testing: %6.2f%%' % (idx/len(test_X) * 100), file=stderr)
 
         print(file=stderr)
         print('Result: ', correct/len(test_X) * 100, '%', sep='', file=stderr)
