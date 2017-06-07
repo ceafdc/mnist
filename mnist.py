@@ -38,7 +38,7 @@ def read_mnist_csv(path, n, with_class, with_header=True):
     if with_class:
         return X, Y
     else:
-        return X, None
+        return X
 
 
 def save_model(model):
@@ -76,7 +76,7 @@ if __name__ == '__main__':
               file=stderr)
     except:
         X, Y = read_mnist_csv('train.csv', 42000, with_class=True)
-        test, _ = read_mnist_csv('test.csv', 28000, with_class=False)
+        test = read_mnist_csv('test.csv', 28000, with_class=False)
         np.save('train_X.npy', X)  # saving in np bynary
         np.save('train_Y.npy', Y)  # for faster loading
         np.save('test.npy', test)  # next time
