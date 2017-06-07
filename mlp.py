@@ -96,8 +96,8 @@ class MLP:
         except KeyboardInterrupt as e:
             pass
 
-    def save(save, dirname):
-        os.makedirs(dirname, exists_ok=True)
+    def save(self, dirname):
+        os.makedirs(dirname, exist_ok=True)
         for idx, layer in enumerate(self.layers, start=1):
             fname = os.path.join(dirname, '%d.layer.npy' % idx)
             np.save(fname, layer)
